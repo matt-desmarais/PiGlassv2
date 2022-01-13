@@ -75,7 +75,7 @@ def runSelection():
         print("emulationstation")
         sys.exit(0)
     if(menulist[index] == 'kodi'):
-        subprocess.Popen(["kodi"], shell=False)
+        subprocess.Popen(["sudo", "-u", "pi", "kodi"], shell=False)
         sys.exit(0)
     if(menulist[index] == 'steamlink'):
         subprocess.Popen(["sudo", "-u", "pi", "steamlink"], shell=False)
