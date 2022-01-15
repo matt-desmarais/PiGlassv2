@@ -9,6 +9,7 @@ import subprocess
 import sys
 import os
 import vlc
+import datetime
 
 volume = vlc.MediaPlayer("file:///home/pi/PiGlassv2/volume.mp3")
 #m = aaudio.Mixer() #change later to audio hat
@@ -17,11 +18,17 @@ m = alsaaudio.Mixer('Speaker')
 current_volume = m.getvolume() # Get the current Volume
 #m.setvolume(80) # Set the volume to 80%.
 
+def get_file_name_vid():  # new
+    return datetime.datetime.now().strftime("Menu-%m-%d_%H.%M.%S.h264")
+
 camera = PiCamera()
 camera.resolution = (1920, 1080)
 camera.start_preview()
 camera.rotation = -90
-camera.annotate_text_size = 160
+camera.annotate_text_size = 155
+filename = get_file_name_vid()
+camera.start_recording(filename)
+
 #camera.annotate_text = "\n\n\nLauncher"
 #creates object 'gamepad' to store the data
 #you can call it whatever you like
@@ -42,24 +49,34 @@ prev_hold = None
 #prints out device info at start
 print(gamepad)
 
-menulist = ["camera", "youtube stream", "emulationstation", "kodi", "steamlink", "disconnect controller", "seven", "eight", "nine", "ten"]
+menulist = ["camera", "take video w/audio", "youtube stream", "emulationstation", "kodi", "steamlink", "disconnect controller"]
 annotateString = ""
 index = 0
 showNextPrev = False
+rainbow = False
 
-colorlist = ["red", "green", "blue", "orange", "yellow", "purple", "yellow", "white", "cyan"]
+#colorlist = ["red", "green", "blue", "orange", "yellow", "purple", "yellow", "white", "cyan"]
+colorlist = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
 
 def animatemenu():
     annotateString = '\n\n\n'+str(menulist[index])
+    #camera.annotate_background = Color('black')
     for x in range(6,160):
         time.sleep(.0025)
-        #camera.annotate_background = Color(random.choice(colorlist)) rainbow
-        camera.annotate_background = Color('black')
+        if(rainbow):
+            camera.annotate_background = Color(colorlist[x%6])
+#            camera.annotate_background = Color(random.choice(colorlist)) #rainbow
+#        else:
+#            camera.annotate_background = Color('black')
         camera.annotate_text_size = x
         camera.annotate_text = annotateString.upper()
-    camera.annotate_background = None
+    if(rainbow):
+        camera.annotate_background = Color(colorlist[index])
+    else:
+        camera.annotate_background = None
 
 def runSelection():
+    camera.stop_recording()
     if(menulist[index] == 'camera'):
         camera.close()
         os.system("python3 /home/pi/PiGlassv2/PiGlassBeta-Python3.py")
@@ -69,6 +86,11 @@ def runSelection():
         camera.close()
         subprocess.Popen(["sh", "/home/pi/PiGlassv2/syncedaudio.sh"], shell=False)
         print("stream")
+        sys.exit(0)
+    if(menulist[index] == 'take video w/audio'):
+        camera.close()
+        subprocess.Popen(["sh", "/home/pi/PiGlassv2/videosound.sh"], shell=False)
+        print("video w/audio")
         sys.exit(0)
     if(menulist[index] == 'emulationstation'):
         subprocess.Popen(["sudo", "ttyecho", "-n", "/dev/tty1", "emulationstation"], shell=False)
@@ -83,11 +105,16 @@ def runSelection():
         sys.exit(0)
     if(menulist[index] == 'disconnect controller'):
         print("disconnect controller")
+        subprocess.Popen(["bluetoothctl", "disconnect", "98:B6:E9:EA:16:6E"], shell=False)
         sys.exit(0)
 
 def menuAnnotate():
+#    camera.annotate_text_size = 160
     annotateString = ''
     if(index > 0):
+#        if(index > 1):
+#            annotateString += menulist[index - 2]
+        #else:
         annotateString += "\n"
         annotateString += menulist[index - 1]
         annotateString += "\n\n"
@@ -98,8 +125,10 @@ def menuAnnotate():
 
     if(index+1 < len(menulist)):
         annotateString += menulist[index+1]
-    else:
-        annotateString += "\n\n"
+    annotateString += "\n"
+#    if(index+2 <= len(menulist)):
+#        annotateString += menulist[index+2]
+    annotateString += "\n"
     camera.annotate_text = annotateString
 
 
@@ -111,7 +140,7 @@ for event in gamepad.read_loop():
         menuAnnotate()
     #camera.annotate_text = annotateString
     if event.type == ecodes.EV_ABS: 
-        camera.annotate_background = None
+#        camera.annotate_background = None
         #if(showNextPrev):
         #    menuAnnotate()
         absevent = categorize(event) 
@@ -156,7 +185,8 @@ for event in gamepad.read_loop():
         if event.value == 1:
             camera.annotate_background = None
             if event.code == yBtn:
-                #camera.annotate_text = "\n\n\nY: Steamlink"
+                rainbow = not rainbow
+                camera.annotate_text = "\n\n\nRainbow: "+str(rainbow)
                 print("Y")
             elif event.code == bBtn:
                 #camera.annotate_text = "\n\n\nB: Kodi"
