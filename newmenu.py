@@ -13,7 +13,7 @@ import datetime
 
 volume = vlc.MediaPlayer("file:///home/pi/PiGlassv2/volume.mp3")
 #m = aaudio.Mixer() #change later to audio hat
-m = alsaaudio.Mixer('Speaker')
+m = alsaaudio.Mixer('Master')
 #m = alsaaudio.Mixer('Headphones', cardindex=0)
 current_volume = m.getvolume() # Get the current Volume
 #m.setvolume(80) # Set the volume to 80%.
@@ -49,7 +49,7 @@ prev_hold = None
 #prints out device info at start
 print(gamepad)
 
-menulist = ["camera", "take video w/audio", "youtube stream", "emulationstation", "kodi", "steamlink", "disconnect controller"]
+menulist = ["camera", "face+eyes", "take video w/audio", "youtube stream", "emulationstation", "kodi", "steamlink", "disconnect controller"]
 annotateString = ""
 index = 0
 showNextPrev = False
@@ -77,6 +77,10 @@ def animatemenu():
 
 def runSelection():
     camera.stop_recording()
+    if(menulist[index] == "face+eyes"):
+        camera.close()
+        os.system("python3 /home/pi/PiGlassv2/haarcascades.py")
+        sys.exit(0)
     if(menulist[index] == 'camera'):
         camera.close()
         os.system("python3 /home/pi/PiGlassv2/PiGlassBeta-Python3.py")
@@ -93,7 +97,11 @@ def runSelection():
         print("video w/audio")
         sys.exit(0)
     if(menulist[index] == 'emulationstation'):
+        subprocess.Popen(["sudo", "systemctl", "stop", "lightdm"], shell=False)
+        time.sleep(1)
         subprocess.Popen(["sudo", "ttyecho", "-n", "/dev/tty1", "emulationstation"], shell=False)
+        subprocess.Popen(["sudo", "systemctl", "start", "lightdm"], shell=False)
+#        subprocess.Popen(["sudo", "ttyecho", "-n", "/dev/tty1", "emulationstation"], shell=False)
         print("emulationstation")
         sys.exit(0)
     if(menulist[index] == 'kodi'):

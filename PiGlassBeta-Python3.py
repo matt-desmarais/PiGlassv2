@@ -17,12 +17,10 @@ import psutil
 import vlc
 
 
-global click, action, cut
+#global click, action, cut
 click = vlc.MediaPlayer("file:///home/pi/PiGlassv2/click.mp3")
 action = vlc.MediaPlayer("file:///home/pi/PiGlassv2/action.mp3")
 cut = vlc.MediaPlayer("file:///home/pi/PiGlassv2/cut.mp3")
-
-
 
 height = 1080
 width = 1920
@@ -35,11 +33,11 @@ camera = PiCamera()
 global zoomcount
 zoomcount=0
 globalCounter = 0
-global key
+#global key
 key = ""
-global m
+#global m
 m=None
-global filename
+#global filename
 filename = None
 
 def checkIfProcessRunning(processName):
@@ -59,8 +57,8 @@ def checkIfProcessRunning(processName):
 
 #creates object 'gamepad' to store the data
 #you can call it whatever you like
-global gamepad
-gamepad = InputDevice('/dev/input/event0')
+#global gamepad
+gamepad = InputDevice('/dev/input/by-id/Gamepad')
 
 #button code variables (change to suit your device)
 aBtn = 305
@@ -113,7 +111,8 @@ ovl = np.zeros((height, width, 3), dtype=np.uint8)
 globalz = {
     'zoom_step'     : 0.03,
     'zoom_xy_min'   : 0.0,
-    'zoom_xy'       : 0.0,
+    'zoom_x'       : 0.0,
+    'zoom_y'       : 0.0,
     'zoom_xy_max'   : 0.4,
     'zoom_wh_min'   : 1.0,
     'zoom_wh'       : 1.0,
@@ -121,38 +120,63 @@ globalz = {
 }
 
 def update_zoom():
-    camera.zoom = (globalz['zoom_xy'], globalz['zoom_xy'], globalz['zoom_wh'], globalz['zoom_wh'])
+    camera.zoom = (globalz['zoom_x'], globalz['zoom_y'], globalz['zoom_wh'], globalz['zoom_wh'])
     print("Camera at (x, y, w, h) = ", camera.zoom)
 
 def set_min_zoom():
-    globalz['zoom_xy'] = globalz['zoom_xy_min']
+    globalz['zoom_x'] = globalz['zoom_xy_min']
+    globalz['zoom_y'] = globalz['zoom_xy_min']
     globalz['zoom_wh'] = globalz['zoom_wh_min']
 
 def set_max_zoom():
-    globalz['zoom_xy'] = globalz['zoom_xy_max']
+    globalz['zoom_x'] = globalz['zoom_xy_max']
+    globalz['zoom_y'] = globalz['zoom_xy_max']
     globalz['zoom_wh'] = globalz['zoom_wh_max']
 
 def zoom_out():
     global zoomcount
-    if globalz['zoom_xy'] - globalz['zoom_step'] < globalz['zoom_xy_min']:
+    if globalz['zoom_x'] - globalz['zoom_step'] < globalz['zoom_xy_min'] and globalz['zoom_y'] - globalz['zoom_step'] < globalz['zoom_xy_min']:
         print("At min zoom")
         #set_min_zoom()
-    else:
-        globalz['zoom_xy'] -= globalz['zoom_step']
+    elif zoomcount >= 1:
+        globalz['zoom_x'] -= globalz['zoom_step']
+        globalz['zoom_y'] -= globalz['zoom_step']
         globalz['zoom_wh'] += (globalz['zoom_step'] * 2)
         zoomcount = zoomcount - 1
     update_zoom()
 
 def zoom_in():
     global zoomcount
-    if globalz['zoom_xy'] + globalz['zoom_step'] > globalz['zoom_xy_max']:
+    if globalz['zoom_x'] + globalz['zoom_step'] > globalz['zoom_xy_max'] and globalz['zoom_y'] + globalz['zoom_step'] > globalz['zoom_xy_max']:
         print("At max zoom")
 #        set_max_zoom()
-    else:
+    elif zoomcount < 10:
         zoomcount = zoomcount + 1
-        globalz['zoom_xy'] += globalz['zoom_step']
+        globalz['zoom_x'] += globalz['zoom_step']
+        globalz['zoom_y'] += globalz['zoom_step']
         globalz['zoom_wh'] -= (globalz['zoom_step'] * 2)
     update_zoom()
+
+def pan_right():
+    global zoomcount
+    globalz['zoom_y'] += globalz['zoom_step']
+    update_zoom()
+
+def pan_left():
+    global zoomcount
+    globalz['zoom_y'] -= globalz['zoom_step']
+    update_zoom()
+
+def pan_up():
+    global zoomcount
+    globalz['zoom_x'] -= globalz['zoom_step']
+    update_zoom()
+
+def pan_down():
+    global zoomcount
+    globalz['zoom_x'] += globalz['zoom_step']
+    update_zoom()
+
 
 ovl = np.zeros((height, width, 3), dtype=np.uint8)
 
@@ -275,7 +299,7 @@ def toggleonoff():
 
 # function 
 def togglepatternZoomIn():
-    global togsw,o,curpat,col,ovl,gui,alphaValue,ycenter,zoomcount
+#################    #global togsw,o,curpat,col,ovl,gui,alphaValue,ycenter,zoomcount
     # if overlay is inactive, ignore button:
     if togsw == 0:
         print("Pattern button pressed, but ignored --- Crosshair not visible.")
@@ -319,7 +343,7 @@ def patternswitcherZoomIn(target,guitoggle):
     global o, zoomcount, ycenter
     if guitoggle == 1:
         creategui(gui)
-    if globalz['zoom_xy'] == globalz['zoom_xy_max']:
+    if globalz['zoom_x'] == globalz['zoom_xy_max']:
         print("zoom at max")
 
 def patternswitcherZoomOut(target,guitoggle):
@@ -329,7 +353,7 @@ def patternswitcherZoomOut(target,guitoggle):
 ###        camera.remove_overlay(o)
     if guitoggle == 1:
         creategui(gui)
-    if globalz['zoom_xy'] == globalz['zoom_xy_min']:
+    if globalz['zoom_x'] == globalz['zoom_xy_min']:
         print("zoom at min")
 
 def upload_file(file_from, file_to):
@@ -357,21 +381,27 @@ def main():
                     print(absevent.event.value)
                     if(absevent.event.value > 32512):
                        print("right")
+                       pan_right()
                        camera.annotate_text = "\n\n\nRIGHT"
                     elif (absevent.event.value < 32512):
                        print("left")
+                       pan_left()
                        camera.annotate_text = "\n\n\nLEFT"
                 if ecodes.bytype[absevent.event.type][absevent.event.code] == 'ABS_Y':
                     print(absevent.event.value)
                     if(absevent.event.value > 32512):
-                        togglepatternZoomOut()
-                        camera.annotate_text = "\n"+str(zoomcount)+"/13\n\nZoom Out"
+                   #     togglepatternZoomOut()
+                   #     camera.annotate_text = "\n"+str(zoomcount)+"/10\n\nZoom Out"
                         print("down")
+                        pan_down()
+                        camera.annotate_text = "\n\n\nDOWN"
 #                        camera.annotate_text = "\n\n\nDOWN"
                     elif (absevent.event.value < 32512):
-                        togglepatternZoomIn()
-                        camera.annotate_text = "\n"+str(zoomcount)+"/13\n\nZoom In"
+                   #     togglepatternZoomIn()
+                   #     camera.annotate_text = "\n"+str(zoomcount)+"/10\n\nZoom In"
                         print("up")
+                        pan_up()
+                        camera.annotate_text = "\n\n\nUP"
 #                        camera.annotate_text = "\n\n\nUP"
             #camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")
             #if KeyboardPoller.keypressed.isSet():  
@@ -381,7 +411,7 @@ def main():
                     camera.annotate_background = None
 
                     if event.code == yBtn:
-                        camera.annotate_text = "\n\n\nY"
+                        camera.annotate_text = "\n\n\nHold to reset zoom"
                         print("Y")
                     elif event.code == bBtn:
                         camera.annotate_text = "\n\n\nB"
@@ -423,23 +453,28 @@ def main():
 #                        camera.annotate_text = "\n\n\nRIGHT"
 #                        print("right")
                     elif event.code == start:
-                        click.play()
                         camera.annotate_text = "\n\n\nSTART"
                         print("start")
                     elif event.code == select:
-                        #click.play()
                         camera.annotate_text = "\n\n\nHold to toggle overlay"
                         print("select")
                     elif event.code == lTrig:
-                        camera.annotate_text = "\n\n\nLEFT BUMPER"
+                        camera.annotate_text = "\n\n\nZoom Out"
+                        togglepatternZoomOut()
+                        camera.annotate_text = "\n"+str(zoomcount)+"/10\n\nZoom Out"
                         print("left bumper")
                     elif event.code == rTrig:
-                        camera.annotate_text = "\n\n\nRIGHT BUMPER"
+                        camera.annotate_text = "\n"+str(zoomcount)+"/10\n\nZoom In"
+                        togglepatternZoomIn()
                         print("right bumper")
 
                 if event.value == 0:
 #                    camera.annotate_text = None
-                    prev_hold = None
+#                    prev_hold = None
+                    if event.code == yBtn:
+                        if(prev_hold == yBtn):
+                            camera.annotate_background = None
+                            camera.annotate_text = "\n\n\nZoom reset"
                     if event.code == aBtn:
                         if recording == 1:
 #                            subprocess.Popen(["sudo", "mpg123", "/home/pi/PiGlassv2/cut.mp3"], shell=False)
@@ -459,6 +494,8 @@ def main():
                             toggleonoff()
                             toggleonoff()
                             print('done recording') 
+                    prev_hold = None
+
 
                 if event.value == 2 and event.code != prev_hold:
                     #prev_hold = event.code
@@ -467,11 +504,11 @@ def main():
                         print("B")
                     elif event.code == yBtn:
                         print("Y")
-                        if checkIfProcessRunning('grive'):
-                            print('Grive is running')
-                        else:
-                            print('No grive process was running')
-                            #subprocess.Popen(["grive", "-u", "-s", "Pictures/"], shell=False)
+                        set_min_zoom()
+                        update_zoom()
+                        zoomcount = 0
+                        prev_hold = event.code
+
                     elif event.code == aBtn:
 #                        subprocess.Popen(["mpg123", "/home/pi/PiGlassv2/action.mp3"], shell=False)
                         camera.annotate_text = None
@@ -532,8 +569,13 @@ def main():
                         toggleonoff()
                         time.sleep(1)
                     elif event.code == lTrig:
+#                        camera.annotate_text = "\n\n\nZoom Out"
+                        togglepatternZoomOut()
+                        camera.annotate_text = "\n"+str(zoomcount)+"/10\n\nZoom Out"
                         print("left bumper")
                     elif event.code == rTrig:
+                        camera.annotate_text = "\n"+str(zoomcount)+"/10\n\nZoom In"
+                        togglepatternZoomIn()
                         print("right bumper")
 
 
