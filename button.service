@@ -1,0 +1,22 @@
+[Unit]
+Description=Button service
+After=display-manager.service
+#After=network.target
+#StartLimitBurst=3
+
+[Service]
+#RestartSec=5
+#ExecStartPre=/usr/bin/xhost +
+ExecStart=/usr/bin/sudo /usr/bin/python3 -u button.py
+WorkingDirectory=/home/pi/PiGlassv2/
+Environment=DISPLAY=:0
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+StartLimitIntervalSec=0
+User=pi
+
+[Install]
+#WantedBy=multi-user.target
+WantedBy=graphical.target
+
