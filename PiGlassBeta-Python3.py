@@ -15,12 +15,22 @@ import _thread
 import os
 import psutil
 import vlc
+from PIL import Image
+
+# thug life meme mask image path
+maskPath = "mask.png"
+
+# cascade classifier object 
+faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 
+#####def get_file_name_vid():  # new
+#####    return datetime.datetime.now().strftime("Camera-%m-%d_%H.%M.%S.h264")
 #global click, action, cut
 click = vlc.MediaPlayer("file:///home/pi/PiGlassv2/click.mp3")
 action = vlc.MediaPlayer("file:///home/pi/PiGlassv2/action.mp3")
 cut = vlc.MediaPlayer("file:///home/pi/PiGlassv2/cut.mp3")
+#tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
 
 height = 1080
 width = 1920
@@ -40,6 +50,9 @@ m=None
 #global filename
 filename = None
 
+#recording = get_file_name_vid()
+#camera.start_recording(recording)
+
 def checkIfProcessRunning(processName):
     '''
     Check if there is any running process that contains the given name processName.
@@ -53,6 +66,48 @@ def checkIfProcessRunning(processName):
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
     return False;
+
+def thuglife():
+    TLfilename = get_file_name_TLpic()
+    camera.capture(TLfilename, use_video_port=True)
+    # read input image
+    image = cv2.imread(TLfilename)
+    # convert image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # detect faces in grayscale image
+    faces = faceCascade.detectMultiScale(gray, 1.15)
+
+    # open input image as PIL image
+    background = Image.open(TLfilename)
+
+    # paste mask on each detected face in input image
+    for (x,y,w,h) in faces:
+
+        # just to show detected faces
+        cv2.rectangle(image, (x,y), (x+w, y+h), (255, 0, 0), 2)
+        #cv2.imshow('face detected', image)
+        #cv2.waitKey(0)
+
+        # open mask as PIL image
+        mask = Image.open(maskPath)
+        # resize mask according to detected face
+        mask = mask.resize((w,h), Image.ANTIALIAS)
+
+        # define offset for mask
+        offset = (x,y)
+        # paste mask on background
+        background.paste(mask, offset, mask=mask)
+
+    # paste final thug life meme
+    background.save(TLfilename)
+
+    photofile = "cp "+TLfilename+" /home/pi/Pictures/"
+    print(filename)
+    subprocess.Popen(photofile, shell=True)
+
+
+
 
 
 #creates object 'gamepad' to store the data
@@ -98,6 +153,8 @@ def initialize_camera():
     camera.hflip = False
     camera.vflip = False
     camera.start_preview()
+#####    recording = get_file_name_vid()
+#####    camera.start_recording(recording)
     print("Camera is configured and outputting video...")
 
 if (width%32) > 0 or (height%16) > 0:
@@ -205,13 +262,16 @@ gui = np.zeros((height, width, 3), dtype=np.uint8)
 gui1 = 'PiGlassV2'
 gui2 = 'Hold X: Take Picture'
 gui3 = 'Hold A: Record Video'
-gui4 = 'Up/Down: Zoom In/Out'
-gui5 = ''
+gui4 = 'Bumpers: Zoom In/Out'
+gui5 = 'Up/Down/Left/Right: Pan'
 
 def upload_file(file_from, file_to):
     dbx = dropbox.Dropbox(token)
     f = open(file_from, 'rb')
     dbx.files_upload(f.read(), file_to)
+
+def get_file_name_TLpic():  # new
+    return datetime.datetime.now().strftime("TL-%Y-%m-%d_%H.%M.%S.jpg")
 
 def get_file_name_pic():  # new
     return datetime.datetime.now().strftime("%Y-%m-%d_%H.%M.%S.jpg")
@@ -225,7 +285,7 @@ def creategui(target):
     cv2.putText(target, gui2, (10,height-130), font, 3, col, 3)
     cv2.putText(target, gui3, (10,height-90), font, 3, col, 3)
     cv2.putText(target, gui4, (10,height-50), font, 3, col, 3)
-    cv2.putText(target, gui5, (10,height-10), font, 3, colormap("green"), 3)
+    cv2.putText(target, gui5, (10,height-10), font, 3, col, 3)
     return
 
 def patternswitch(target,guitoggle):
@@ -363,7 +423,7 @@ def upload_file(file_from, file_to):
 
 
 def main():
-    global buttoncounter, zoomcount, guiOn, recording, gui5, gui, o, ovl, key, gamepad, action, click, cut, filename
+    global buttoncounter, zoomcount, guiOn, recording, gui5, gui, o, ovl, key, gamepad, action, click, cut, filename, tl
     prev_hold = None
     try:
         initialize_camera()
@@ -414,8 +474,8 @@ def main():
                         camera.annotate_text = "\n\n\nHold to reset zoom"
                         print("Y")
                     elif event.code == bBtn:
-                        camera.annotate_text = "\n\n\nB"
-                        print("B")
+                        camera.annotate_text = "\n\n\nThugLife"
+                        print("ThugLife")
 #                        time.sleep(2)
                     elif event.code == aBtn:
                         camera.annotate_text = "\n\n\nHold to record video"
@@ -469,7 +529,7 @@ def main():
                         print("right bumper")
 
                 if event.value == 0:
-#                    camera.annotate_text = None
+                    camera.annotate_text = None
 #                    prev_hold = None
                     if event.code == yBtn:
                         if(prev_hold == yBtn):
@@ -489,7 +549,7 @@ def main():
 
                             recording = 0
                             time.sleep(1)
-                            gui5 = ""
+                            gui5 = "Up/Down/Left/Right: Pan"
                             togglepatternRecord()
                             toggleonoff()
                             toggleonoff()
@@ -499,9 +559,15 @@ def main():
 
                 if event.value == 2 and event.code != prev_hold:
                     #prev_hold = event.code
-                    camera.annotate_background = Color('green')
+#                    camera.annotate_background = Color('green')
                     if event.code == bBtn:
-                        print("B")
+                        camera.annotate_text = None
+                        print("ThugLife")
+                        tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
+                        tl.play()
+                        thuglife()
+                        camera.annotate_text = "\n\n\nThugLife Done"
+                        prev_hold = event.code
                     elif event.code == yBtn:
                         print("Y")
                         set_min_zoom()

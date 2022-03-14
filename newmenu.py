@@ -49,7 +49,7 @@ prev_hold = None
 #prints out device info at start
 print(gamepad)
 
-menulist = ["camera", "face+eyes", "take video w/audio", "youtube stream", "emulationstation", "kodi", "steamlink", "disconnect controller"]
+menulist = ["camera", "thuglife", "take video w/audio", "youtube stream", "emulationstation", "kodi", "steamlink", "disconnect controller"]
 annotateString = ""
 index = 0
 showNextPrev = False
@@ -77,9 +77,9 @@ def animatemenu():
 
 def runSelection():
     camera.stop_recording()
-    if(menulist[index] == "face+eyes"):
+    if(menulist[index] == "thuglife"):
         camera.close()
-        os.system("python3 /home/pi/PiGlassv2/haarcascades.py")
+        os.system("python3 /home/pi/PiGlassv2/thuglife.py")
         sys.exit(0)
     if(menulist[index] == 'camera'):
         camera.close()
@@ -98,7 +98,7 @@ def runSelection():
         sys.exit(0)
     if(menulist[index] == 'emulationstation'):
         subprocess.Popen(["sudo", "systemctl", "stop", "lightdm"], shell=False)
-        time.sleep(1)
+        time.sleep(2)
         subprocess.Popen(["sudo", "ttyecho", "-n", "/dev/tty1", "emulationstation"], shell=False)
         subprocess.Popen(["sudo", "systemctl", "start", "lightdm"], shell=False)
 #        subprocess.Popen(["sudo", "ttyecho", "-n", "/dev/tty1", "emulationstation"], shell=False)
