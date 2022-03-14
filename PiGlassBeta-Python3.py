@@ -30,7 +30,7 @@ faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 click = vlc.MediaPlayer("file:///home/pi/PiGlassv2/click.mp3")
 action = vlc.MediaPlayer("file:///home/pi/PiGlassv2/action.mp3")
 cut = vlc.MediaPlayer("file:///home/pi/PiGlassv2/cut.mp3")
-#tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
+tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
 
 height = 1080
 width = 1920
