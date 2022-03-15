@@ -108,7 +108,7 @@ def thuglife():
 
         # paste final thug life meme
         background.save(TLfilename)
-        camera.annotate_text = "\n\n\nThugLife Done"
+        camera.annotate_text = "\n\n\n"+str(len(faces))+" Thugs Found"
         photofile = "cp "+TLfilename+" /home/pi/Pictures/"
         print(filename)
         subprocess.Popen(photofile, shell=True)
