@@ -68,6 +68,7 @@ def checkIfProcessRunning(processName):
     return False;
 
 def thuglife():
+    camera.annotate_text = None
     TLfilename = get_file_name_TLpic()
     camera.capture(TLfilename, use_video_port=True)
     # read input image
@@ -80,31 +81,34 @@ def thuglife():
 
     # open input image as PIL image
     background = Image.open(TLfilename)
-
+    if(len(faces) == 0):
+        camera.annotate_text = "\n\n\nNo Thugs Detected"
+        return
+    else:
     # paste mask on each detected face in input image
-    for (x,y,w,h) in faces:
+        for (x,y,w,h) in faces:
 
-        # just to show detected faces
-        cv2.rectangle(image, (x,y), (x+w, y+h), (255, 0, 0), 2)
-        #cv2.imshow('face detected', image)
-        #cv2.waitKey(0)
+            # just to show detected faces
+            cv2.rectangle(image, (x,y), (x+w, y+h), (255, 0, 0), 2)
+            #cv2.imshow('face detected', image)
+            #cv2.waitKey(0)
 
-        # open mask as PIL image
-        mask = Image.open(maskPath)
-        # resize mask according to detected face
-        mask = mask.resize((w,h), Image.ANTIALIAS)
+            # open mask as PIL image
+            mask = Image.open(maskPath)
+            # resize mask according to detected face
+            mask = mask.resize((w,h), Image.ANTIALIAS)
 
-        # define offset for mask
-        offset = (x,y)
-        # paste mask on background
-        background.paste(mask, offset, mask=mask)
+            # define offset for mask
+            offset = (x,y)
+            # paste mask on background
+            background.paste(mask, offset, mask=mask)
 
-    # paste final thug life meme
-    background.save(TLfilename)
-
-    photofile = "cp "+TLfilename+" /home/pi/Pictures/"
-    print(filename)
-    subprocess.Popen(photofile, shell=True)
+        # paste final thug life meme
+        background.save(TLfilename)
+        camera.annotate_text = "\n\n\nThugLife Done"
+        photofile = "cp "+TLfilename+" /home/pi/Pictures/"
+        print(filename)
+        subprocess.Popen(photofile, shell=True)
 
 
 
@@ -474,7 +478,7 @@ def main():
                         camera.annotate_text = "\n\n\nHold to reset zoom"
                         print("Y")
                     elif event.code == bBtn:
-                        camera.annotate_text = "\n\n\nThugLife"
+                        camera.annotate_text = "\n\n\nHold for ThugLife"
                         print("ThugLife")
 #                        time.sleep(2)
                     elif event.code == aBtn:
@@ -561,12 +565,12 @@ def main():
                     #prev_hold = event.code
 #                    camera.annotate_background = Color('green')
                     if event.code == bBtn:
-                        camera.annotate_text = None
+                        #camera.annotate_text = None
                         print("ThugLife")
-                        tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
                         tl.play()
+                        tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
                         thuglife()
-                        camera.annotate_text = "\n\n\nThugLife Done"
+#                        camera.annotate_text = "\n\n\nThugLife Done"
                         prev_hold = event.code
                     elif event.code == yBtn:
                         print("Y")
