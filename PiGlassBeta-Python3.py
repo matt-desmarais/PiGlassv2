@@ -68,6 +68,7 @@ def checkIfProcessRunning(processName):
     return False;
 
 def thuglife():
+    global tl
     camera.annotate_text = None
     TLfilename = get_file_name_TLpic()
     camera.capture(TLfilename, use_video_port=True)
@@ -85,6 +86,8 @@ def thuglife():
         camera.annotate_text = "\n\n\nNo Thugs Detected"
         return
     else:
+        tl.play()
+        tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
     # paste mask on each detected face in input image
         for (x,y,w,h) in faces:
 
@@ -567,8 +570,8 @@ def main():
                     if event.code == bBtn:
                         #camera.annotate_text = None
                         print("ThugLife")
-                        tl.play()
-                        tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
+                        #tl.play()
+                        #tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
                         thuglife()
 #                        camera.annotate_text = "\n\n\nThugLife Done"
                         prev_hold = event.code
