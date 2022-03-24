@@ -26,7 +26,7 @@ def get_file_name_vid():  # new
 camera = PiCamera()
 camera.resolution = (1920, 1080)
 camera.start_preview()
-camera.rotation = -270
+camera.rotation = -90
 camera.annotate_text_size = 155
 filename = get_file_name_vid()
 camera.start_recording(filename)
