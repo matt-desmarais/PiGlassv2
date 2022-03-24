@@ -1,0 +1,29 @@
+[Kodi]
+color = "red"
+cmd = "sudo -u pi kodi"
+process = "kodi.bin_v7"
+
+[RetroPie]
+color = "green"
+cmd = "sudo ttyecho -n /dev/tty1 emulationstation"
+process = "retroarch emulationstatio"
+
+["Funny Camera"]
+color = "purple"
+cmd = "sudo python3 funnycamera.py"
+process = "python3"
+
+["Camera"]
+color = "blue"
+cmd = "sudo python3 camera.py"
+process = "python3"
+
+["Video w/Audio"]
+color = "brown"
+cmd = "sh videosound.sh"
+process = "raspivid ffmpeg"
+
+["Livestream (YT)"]
+color = "orange"
+cmd = "sh youtube.sh"
+process = "raspivid ffmpeg"

@@ -1,0 +1,30 @@
+#["will smith"]
+#display_name = "Wills"
+#file = "ws.png"
+#location = "face"
+
+[anonymous]
+display_name = "Anons"
+file = "anon.png"
+location = "center"
+
+#[thuglife]
+#display_name = "Thugs"
+#file = "mask.png"
+#location = "center"
+
+[brainslug]
+display_name = "Slugs"
+file = "mask2.png"
+location = "top-right"
+
+["brain blender"]
+display_name = "Blenders"
+file = "mask4.png"
+location = "top"
+
+["dum sticker"]
+display_name = "Dum"
+file = "maskdum.png"
+location = "center-right"
+

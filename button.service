@@ -7,7 +7,7 @@ After=display-manager.service
 [Service]
 #RestartSec=5
 #ExecStartPre=/usr/bin/xhost +
-ExecStart=/usr/bin/sudo /usr/bin/python3 -u button.py
+ExecStart=/usr/bin/sudo /usr/bin/python3 -u tomlbutton.py
 WorkingDirectory=/home/pi/PiGlassv2/
 Environment=DISPLAY=:0
 StandardOutput=inherit
