@@ -18,12 +18,38 @@ from PIL import Image
 import csv
 import random
 
-with open('funnypics.csv', newline='') as f:
-    reader = csv.reader(f)
-    data = list(reader)
-print(data)
+#with open('funnypics.csv', newline='') as f:
+#    reader = csv.reader(f)
+#    data = list(reader)
+#print(data)
 
-csvList = data #[['thuglife', "Thugs", "/home/pi/PiGlassv2/mask.png", "center"], ["brainslug", "Slugs", "mask2.png","top-right"], ["brain blender", "Blenders", "mask4.png", "top"], ['dum sticker', "Dum", "/home/pi/PiGlassv2/maskdum.png", "center"]]
+
+#!/usr/bin/env python3
+import toml
+
+data = toml.load("piglass.toml")
+total = []
+
+#for key in data.keys():
+#    sList = [key]
+#    for value in data.get(key).values():
+#        sList += [value]
+#    total += [sList]
+#print(total)
+
+for index in range(0, len(data.keys())-1):
+    index_key = list(data.keys())[index]
+    index_val = list(data.values())[index]
+    index_name = list(data.values())[index]['display_name']
+    index_file = list(data.values())[index]['file']
+    index_location = list(data.values())[index]['location']
+#    print(index_name)
+#    print(index_file)
+#    print(index_location)
+    total += [[index_key, index_name, index_file, index_location]]
+print(total)
+
+tomlList = total #[['thuglife', "Thugs", "/home/pi/PiGlassv2/mask.png", "center"], ["brainslug", "Slugs", "mask2.png","top-right"], ["brain blender", "Blenders", "mask4.png", "top"], ['dum sticker', "Dum", "/home/pi/PiGlassv2/maskdum.png", "center"]]
 index = 0
 # cascade classifier object 
 faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -51,11 +77,13 @@ m=None
 filename = None
 
 def animatemenu():
-    annotateString = '\n\n\n'+str(csvList[index][0])
+    annotateString = '\n\n\n'+str(tomlList[index][0])
     for x in range(6,160):
+        camera.annotate_background = Color('black')
         time.sleep(.0025)
         camera.annotate_text_size = x
         camera.annotate_text = annotateString.upper()
+    camera.annotate_background = None
 
 def checkIfProcessRunning(processName):
     '''
@@ -87,21 +115,27 @@ def randomPic():
     # open input image as PIL image
     background = Image.open(TLfilename)
     if(len(faces) == 0):
-        camera.annotate_text = "\n\n\nNo "+csvList[index][1]+" Detected"
+        camera.annotate_text = "\n\n\nNo "+tomlList[index][1]+" Detected"
         return
     else:
         # paste mask on each detected face in input image
         for (x,y,w,h) in faces:
-            randomMask = random.randint(0,len(csvList)-1)
-            maskPath = csvList[randomMask][2]
+            randomMask = random.randint(0,len(tomlList)-1)
+            maskPath = tomlList[randomMask][2]
             # just to show detected faces
             cv2.rectangle(image, (x,y), (x+w, y+h), (255, 0, 0), 2)
             # open mask as PIL image
             mask = Image.open(maskPath)
             # resize mask according to detected face
-            mask = mask.resize((w,h), Image.ANTIALIAS)
+            #mask = mask.resize((w,h), Image.ANTIALIAS)
+            if(tomlList[randomMask][3] == "face"):
+                mask = mask.resize((int(w*1.5),int(h*1.5)), Image.ANTIALIAS)
+            else:
+                mask = mask.resize((w,h), Image.ANTIALIAS)
             # define offset for mask
-            posstr = csvList[randomMask][3]
+            posstr = tomlList[randomMask][3]
+            if(posstr == "face"):
+                offset = (x-int(w/5),y-int(h/3))
             if(posstr == "center"):
                 offset = (x,y)
             if(posstr == "center-left"):
@@ -134,15 +168,15 @@ def randomPic():
         background.save(TLfilename)
         img = cv2.imread(TLfilename, 1)
         imgS = cv2.resize(img, (640,480))
-        cv2.namedWindow(csvList[randomMask][1], cv2.WND_PROP_FULLSCREEN)
-        cv2.setWindowProperty(csvList[randomMask][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
-        cv2.imshow(csvList[randomMask][1], imgS)
+        cv2.namedWindow(tomlList[randomMask][1], cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty(tomlList[randomMask][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+        cv2.imshow(tomlList[randomMask][1], imgS)
         camera.close()
         cv2.waitKey(4000)
         camera = PiCamera()
         initialize_camera()
         animatemenu()
-        cv2.destroyWindow(csvList[randomMask][1])
+        cv2.destroyWindow(tomlList[randomMask][1])
 #        camera.annotate_text = "\n\n\n"+str(len(faces))+" "+csvList[index][1]+$
         photofile = "cp "+TLfilename+" /home/pi/Pictures/"
         print(filename)
@@ -152,11 +186,15 @@ def randomPic():
 
 def funnyPic():
     global camera, index
-    maskPath = csvList[index][2]
+    maskPath = tomlList[index][2]
     print(maskPath)
     camera.annotate_text = None
     TLfilename = get_file_name_TLpic()
     camera.capture(TLfilename, use_video_port=True)
+
+    camera.annotate_text = "\n\nLocating\n"+str(tomlList[index][1])
+
+
     # read input image
     image = cv2.imread(TLfilename)
     # convert image to grayscale
@@ -168,7 +206,7 @@ def funnyPic():
     # open input image as PIL image
     background = Image.open(TLfilename)
     if(len(faces) == 0):
-        camera.annotate_text = "\n\n\nNo "+csvList[index][1]+" Detected"
+        camera.annotate_text = "\n\n\nNo "+tomlList[index][1]+" Detected"
         return
     else:
         # paste mask on each detected face in input image
@@ -178,9 +216,15 @@ def funnyPic():
             # open mask as PIL image
             mask = Image.open(maskPath)
             # resize mask according to detected face
-            mask = mask.resize((w,h), Image.ANTIALIAS)
+            if(tomlList[index][3] == "face"):
+                mask = mask.resize((int(w*1.5),int(h*1.5)), Image.ANTIALIAS)
+            else:
+                mask = mask.resize((w,h), Image.ANTIALIAS)
             # define offset for mask
-            posstr = csvList[index][3]
+            posstr = tomlList[index][3]
+            if(posstr == "face"):
+                offset = (x-int(w/5),y-int(h/3))
+#                offset = (x,y)
             if(posstr == "center"):
                 offset = (x,y)
             if(posstr == "center-left"):
@@ -215,15 +259,15 @@ def funnyPic():
         background.save(TLfilename)
         img = cv2.imread(TLfilename, 1)
         imgS = cv2.resize(img, (640,480))
-        cv2.namedWindow(csvList[index][1], cv2.WND_PROP_FULLSCREEN)
-        cv2.setWindowProperty(csvList[index][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
-        cv2.imshow(csvList[index][1], imgS)
+        cv2.namedWindow(tomlList[index][1], cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty(tomlList[index][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+        cv2.imshow(tomlList[index][1], imgS)
         camera.close()
         cv2.waitKey(4000)
         camera = PiCamera()
         initialize_camera()
         animatemenu()
-        cv2.destroyWindow(csvList[index][1])
+        cv2.destroyWindow(tomlList[index][1])
 #        camera.annotate_text = "\n\n\n"+str(len(faces))+" "+csvList[index][1]+" Found"
         photofile = "cp "+TLfilename+" /home/pi/Pictures/"
         print(filename)
@@ -263,7 +307,7 @@ def initialize_camera():
     camera.awb_mode = 'auto'
     camera.image_effect = 'none'
     camera.color_effects = None
-    camera.rotation = -90
+    camera.rotation = -270
     camera.hflip = False
     camera.vflip = False
     camera.start_preview()
@@ -372,8 +416,8 @@ togsw = 1
 guiOn = 1
 gui = np.zeros((height, width, 3), dtype=np.uint8)
 gui1 = 'PiGlassV2'
-gui2 = 'Hold B: Take Funny Picture'
-gui3 = 'Hold A: Take Random Pic'
+gui2 = 'Hold X: Take Picture'
+gui3 = 'Hold A: Random Pic'
 gui4 = 'Bumpers: Zoom In/Out'
 gui5 = 'Up/Down Select Overlay'
 
@@ -558,7 +602,7 @@ def main():
                     print(absevent.event.value)
                     if(absevent.event.value > 32512):
                         print("down")
-                        if(index < len(csvList)-1):
+                        if(index < len(tomlList)-1):
                             index += 1
                             animatemenu()
                         else:
@@ -570,7 +614,7 @@ def main():
                             index -= 1
                             animatemenu()
                         else:
-                            index = len(csvList)-1
+                            index = len(tomlList)-1
                             animatemenu()
             #if KeyboardPoller.keypressed.isSet():  
             if event.type == ecodes.EV_KEY:
@@ -582,7 +626,7 @@ def main():
                         camera.annotate_text = "\n\n\nHold to reset zoom"
                         print("Y")
                     elif event.code == bBtn:
-                        camera.annotate_text = "\n\n\nHold for "+str(csvList[index][0])
+                        camera.annotate_text = "\n\n\nHold for "+str(tomlList[index][0])
                         print("ThugLife")
 #                        time.sleep(2)
                     elif event.code == aBtn:
