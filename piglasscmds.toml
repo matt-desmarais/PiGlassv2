@@ -5,14 +5,8 @@ process = "kodi.bin_v7"
 
 [RetroPie]
 color = "green"
-#cmd = "sudo systemctl stop lightdm.service && sleep 1 && sudo ttyecho -n /dev/tty1 emulationstation && sudo systemctl start lightdm.service"
 cmd = "sh retropie.sh"
 process = "retroarch emulationstatio"
-
-["Pet Camera"]
-color = "red"
-cmd = "sudo python3 petcamera.py"
-process = "python3"
 
 ["Funny Camera"]
 color = "purple"
@@ -27,9 +21,4 @@ process = "python3"
 ["Video w/Audio"]
 color = "brown"
 cmd = "sh videosound.sh"
-process = "raspivid ffmpeg"
-
-["Livestream (YT)"]
-color = "orange"
-cmd = "sh youtube.sh"
 process = "raspivid ffmpeg"

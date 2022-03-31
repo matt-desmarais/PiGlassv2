@@ -18,10 +18,10 @@ import vlc
 from PIL import Image
 
 # thug life meme mask image path
-maskPath = "mask2.png"
+#maskPath = "mask2.png"
 
 # cascade classifier object 
-faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+#faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 
 #####def get_file_name_vid():  # new
@@ -66,57 +66,6 @@ def checkIfProcessRunning(processName):
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
     return False;
-
-def thuglife():
-    global tl
-    camera.annotate_text = None
-    TLfilename = get_file_name_TLpic()
-    camera.capture(TLfilename, use_video_port=True)
-    # read input image
-    image = cv2.imread(TLfilename)
-    # convert image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # detect faces in grayscale image
-    faces = faceCascade.detectMultiScale(gray, 1.15)
-
-    # open input image as PIL image
-    background = Image.open(TLfilename)
-    if(len(faces) == 0):
-        camera.annotate_text = "\n\n\nNo Thugs Detected"
-        return
-    else:
-        tl.play()
-        tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
-    # paste mask on each detected face in input image
-        for (x,y,w,h) in faces:
-
-            # just to show detected faces
-            cv2.rectangle(image, (x,y), (x+w, y+h), (255, 0, 0), 2)
-            #cv2.imshow('face detected', image)
-            #cv2.waitKey(0)
-
-            # open mask as PIL image
-            mask = Image.open(maskPath)
-            # resize mask according to detected face
-            mask = mask.resize((w,h), Image.ANTIALIAS)
-
-            # define offset for mask
-            #offset = (x,y)
-            offset = (x+int(w/3),y-int(h/1.5))
-            # paste mask on background
-            background.paste(mask, offset, mask=mask)
-
-        # paste final thug life meme
-        background.save(TLfilename)
-        camera.annotate_text = "\n\n\n"+str(len(faces))+" Thugs Found"
-        photofile = "cp "+TLfilename+" /home/pi/Pictures/"
-        print(filename)
-        subprocess.Popen(photofile, shell=True)
-
-
-
-
 
 #creates object 'gamepad' to store the data
 #you can call it whatever you like
@@ -482,9 +431,7 @@ def main():
                         camera.annotate_text = "\n\n\nHold to reset zoom"
                         print("Y")
                     elif event.code == bBtn:
-                        camera.annotate_text = "\n\n\nHold for ThugLife"
-                        print("ThugLife")
-#                        time.sleep(2)
+                        camera.annotate_text = "\n\n\nHold for..."
                     elif event.code == aBtn:
                         camera.annotate_text = "\n\n\nHold to record video"
 
@@ -551,9 +498,9 @@ def main():
                             #set_min_zoom()
                             camera.stop_recording()
 
-                            photofile = "cp "+filename+" /home/pi/Pictures/"
+                            videofile = "cp "+filename+" /home/pi/Videos/"
                             print(filename)
-                            subprocess.Popen(photofile, shell=True)
+                            subprocess.Popen(videofile, shell=True)
 
                             recording = 0
                             time.sleep(1)
@@ -569,12 +516,6 @@ def main():
                     #prev_hold = event.code
 #                    camera.annotate_background = Color('green')
                     if event.code == bBtn:
-                        #camera.annotate_text = None
-                        print("ThugLife")
-                        #tl.play()
-                        #tl = vlc.MediaPlayer("file:///home/pi/PiGlassv2/TL.mp3")
-                        thuglife()
-#                        camera.annotate_text = "\n\n\nThugLife Done"
                         prev_hold = event.code
                     elif event.code == yBtn:
                         print("Y")
@@ -599,6 +540,10 @@ def main():
                             toggleonoff()
 #                            set_min_zoom()
                             camera.start_recording(filename)
+
+
+
+
                             print('recording')
                             recording = 1
                         print("A")

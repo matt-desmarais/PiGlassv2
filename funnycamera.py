@@ -80,7 +80,7 @@ def animatemenu():
     annotateString = '\n\n\n'+str(tomlList[index][0])
     for x in range(6,160):
         camera.annotate_background = Color('black')
-        time.sleep(.0025)
+        #time.sleep(.0025)
         camera.annotate_text_size = x
         camera.annotate_text = annotateString.upper()
     camera.annotate_background = None
@@ -115,7 +115,7 @@ def randomPic():
     # open input image as PIL image
     background = Image.open(TLfilename)
     if(len(faces) == 0):
-        camera.annotate_text = "\n\n\nNo "+tomlList[index][1]+" Detected"
+        camera.annotate_text = "\n\n\nNo Faces Detected"
         return
     else:
         # paste mask on each detected face in input image
@@ -428,7 +428,7 @@ def get_file_name_pic():  # new
     return datetime.datetime.now().strftime("%Y-%m-%d_%H.%M.%S.jpg")
 
 def get_file_name_vid():  # new
-    return datetime.datetime.now().strftime("%Y-%m-%d_%H.%M.%S.h264")
+    return datetime.datetime.now().strftime("Funny-%Y-%m-%d_%H.%M.%S.h264")
 
 def creategui(target):
     global gui5
@@ -578,6 +578,8 @@ def main():
     prev_hold = None
     try:
         initialize_camera()
+        recording = get_file_name_vid()
+        camera.start_recording(recording)
 #        camera.annotate_text = datetime.datetime.now().strftime("%Y-%m-%d_%H.%M.%S")
         patternswitch(gui,1)
         guivisible = 1
