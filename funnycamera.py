@@ -23,7 +23,6 @@ import random
 #    data = list(reader)
 #print(data)
 
-
 #!/usr/bin/env python3
 import toml
 
@@ -36,6 +35,8 @@ total = []
 #        sList += [value]
 #    total += [sList]
 #print(total)
+
+subprocess.Popen(["sudo", "systemctl", "start", "lightdm.service"], shell=False) 
 
 for index in range(0, len(data.keys())-1):
     index_key = list(data.keys())[index]
@@ -664,7 +665,7 @@ def main():
 
                 if event.value == 2 and event.code != prev_hold:
                     if event.code == bBtn:
-                        print("ThugLife")
+                        camera.annotate_text = None
                         funnyPic()
                         prev_hold = event.code
                     elif event.code == yBtn:

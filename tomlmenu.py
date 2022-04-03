@@ -15,7 +15,8 @@ import toml
 data = toml.load("piglasscmds.toml")
 volume = vlc.MediaPlayer("file:///home/pi/PiGlassv2/volume.mp3")
 #m = aaudio.Mixer() #change later to audio hat
-m = alsaaudio.Mixer('Master')
+m = alsaaudio.Mixer('Speaker', cardindex=1)
+#m = alsaaudio.Mixer('Master')
 #m = alsaaudio.Mixer('Headphones', cardindex=0)
 current_volume = m.getvolume() # Get the current Volume
 #m.setvolume(80) # Set the volume to 80%.
@@ -65,7 +66,7 @@ def animatemenu():
     annotateString = '\n\n\n'+str(index_key)
     #camera.annotate_background = Color('black')
     for x in range(6,160):
-        time.sleep(.0025)
+        time.sleep(.0005)
         if(rainbow):
             camera.annotate_background = Color(list(data.values())[x%len(list(data.keys()))]['color'])
 #            camera.annotate_background = Color(random.choice(colorlist)) #rainbow

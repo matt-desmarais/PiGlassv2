@@ -40,11 +40,16 @@ def button_callback(channel):
 #        time.sleep(2)
         subprocess.Popen(["python3", "/home/pi/PiGlassv2/tomlmenu.py"], shell=False)
     elif(counter%2 == 0):
-        if checkIfProcessRunning('kodi'):
-            print('kodi is running')
-            subprocess.Popen(["sudo", "systemctl", "restart", "lightdm.service"], shell=False) 
-        else:
-            print('No kodi process was running')
+#        if checkIfProcessRunning('kodi'): # or checkIfProcessRunning('retroarch'):
+#            print('kodi is running')
+#            subprocess.Popen(["sudo", "systemctl", "restart", "lightdm.service"], shell=False) 
+#        else:
+#            print('No kodi process was running')
+#        if checkIfProcessRunning('retroarch'): # or checkIfProcessRunning('retroarch$
+#            print('es is running')
+#            subprocess.Popen(["sudo", "systemctl", "restart", "lightdm.service"], shell=False) 
+#        else:
+#            print('No kodi process was running')
 #        subprocess.Popen(["sudo", "systemctl", "restart", "lightdm.service"], shell=False) 
         print("Killed")
         #subprocess.Popen(["sudo", "mpg123", "/home/pi/PiGlassv2/killing.mp3"], shell=False)
@@ -64,6 +69,8 @@ def button_callback(channel):
         time.sleep(3)
 #        print(killall)
 #        subprocess.Popen(str(killall), shell=False)
+        subprocess.Popen(["sudo", "systemctl", "stop", "lightdm.service"], shell=False) 
+        time.sleep(1)
         subprocess.Popen(['sudo', 'killall', 'python3'], shell=False)
 #        subprocess.Popen(['sudo', 'killall', "raspivid", "ffmpeg", "steamlink", 'kodi.bin_v7', 'retroarch', 'emulationstatio', 'python3'], shell=False)
     print("Button was pushed!")
@@ -75,6 +82,8 @@ GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 10 to be an input 
 GPIO.add_event_detect(17,GPIO.RISING,callback=button_callback, bouncetime=3000) # Setup event on pin 10 rising edge
 
 #message = input("Press enter to quit\n\n") # Run until someone presses enter
+
+#subprocess.Popen(["sudo", "-u", "pi", "qjoypad"], shell=False) 
 
 while True:
     time.sleep(.5)
