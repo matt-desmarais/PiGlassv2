@@ -36,7 +36,7 @@ total = []
 #    total += [sList]
 #print(total)
 
-subprocess.Popen(["sudo", "systemctl", "start", "lightdm.service"], shell=False) 
+#subprocess.Popen(["sudo", "systemctl", "start", "lightdm.service"], shell=False) 
 
 for index in range(0, len(data.keys())-1):
     index_key = list(data.keys())[index]
@@ -173,6 +173,7 @@ def randomPic():
         cv2.setWindowProperty(tomlList[randomMask][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
         cv2.imshow(tomlList[randomMask][1], imgS)
         camera.close()
+#        sudo ttyecho -n /dev/tty1 "fbi -a -t 4 /home/pi/PiGlassv2/TL-selfie.jpg"
         cv2.waitKey(4000)
         camera = PiCamera()
         initialize_camera()
@@ -190,6 +191,7 @@ def funnyPic():
     maskPath = tomlList[index][2]
     print(maskPath)
     camera.annotate_text = None
+    time.sleep(.25)
     TLfilename = get_file_name_TLpic()
     camera.capture(TLfilename, use_video_port=True)
 
@@ -259,16 +261,24 @@ def funnyPic():
         # paste final meme
         background.save(TLfilename)
         img = cv2.imread(TLfilename, 1)
-        imgS = cv2.resize(img, (640,480))
-        cv2.namedWindow(tomlList[index][1], cv2.WND_PROP_FULLSCREEN)
-        cv2.setWindowProperty(tomlList[index][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
-        cv2.imshow(tomlList[index][1], imgS)
+#        imgS = cv2.resize(img, (640,480))
+#        cv2.namedWindow(tomlList[index][1], cv2.WND_PROP_FULLSCREEN)
+#        cv2.setWindowProperty(tomlList[index][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+#        cv2.imshow(tomlList[index][1], imgS)
+#        camera.close()
+        subprocess.Popen(["sudo", "ttyecho", "-n", "/dev/tty1", "fbi -a -noverbose /home/pi/PiGlassv2/"+TLfilename], shell=False)
+        time.sleep(1)
         camera.close()
-        cv2.waitKey(4000)
+        time.sleep(4)
+#####        subprocess.Popen(["sudo", "killall", "fbi"], shell=False) 
+#        cv2.waitKey(4000)
         camera = PiCamera()
         initialize_camera()
+##        subprocess.Popen(["sudo", "killall", "fbi"], shell=False) 
         animatemenu()
-        cv2.destroyWindow(tomlList[index][1])
+        subprocess.Popen(["sudo", "killall", "fbi"], shell=False) 
+
+#        cv2.destroyWindow(tomlList[index][1])
 #        camera.annotate_text = "\n\n\n"+str(len(faces))+" "+csvList[index][1]+" Found"
         photofile = "cp "+TLfilename+" /home/pi/Pictures/"
         print(filename)
