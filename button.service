@@ -18,5 +18,6 @@ User=pi
 
 [Install]
 #WantedBy=multi-user.target
-WantedBy=graphical.target
+#WantedBy=graphical.target
+WantedBy=default.target
 
