@@ -484,7 +484,7 @@ def main():
                         print("right bumper")
 
                 if event.value == 0:
-                    camera.annotate_text = None
+#                    camera.annotate_text = None
 #                    prev_hold = None
                     if event.code == yBtn:
                         if(prev_hold == yBtn):

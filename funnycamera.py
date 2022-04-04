@@ -103,6 +103,7 @@ def checkIfProcessRunning(processName):
 def randomPic():
     global camera
     camera.annotate_text = None
+    time.sleep(.25)
     TLfilename = get_file_name_TLpic()
     camera.capture(TLfilename, use_video_port=True)
     # read input image
@@ -169,17 +170,20 @@ def randomPic():
         background.save(TLfilename)
         img = cv2.imread(TLfilename, 1)
         imgS = cv2.resize(img, (640,480))
-        cv2.namedWindow(tomlList[randomMask][1], cv2.WND_PROP_FULLSCREEN)
-        cv2.setWindowProperty(tomlList[randomMask][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
-        cv2.imshow(tomlList[randomMask][1], imgS)
+#        cv2.namedWindow(tomlList[randomMask][1], cv2.WND_PROP_FULLSCREEN)
+#        cv2.setWindowProperty(tomlList[randomMask][1], cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+##        cv2.imshow(tomlList[randomMask][1], imgS)
+        subprocess.Popen(["sudo", "ttyecho", "-n", "/dev/tty1", "fbi -a -noverbose /home/pi/PiGlassv2/"+TLfilename], shell=False)
+        time.sleep(1)
         camera.close()
-#        sudo ttyecho -n /dev/tty1 "fbi -a -t 4 /home/pi/PiGlassv2/TL-selfie.jpg"
-        cv2.waitKey(4000)
+        time.sleep(4)
+#####        subprocess.Popen(["sudo", "killall", "fbi"], shell=False) 
+#        cv2.waitKey(4000)
         camera = PiCamera()
         initialize_camera()
+##        subprocess.Popen(["sudo", "killall", "fbi"], shell=False) 
         animatemenu()
-        cv2.destroyWindow(tomlList[randomMask][1])
-#        camera.annotate_text = "\n\n\n"+str(len(faces))+" "+csvList[index][1]+$
+        subprocess.Popen(["sudo", "killall", "fbi"], shell=False) #        camera.annotate_text = "\n\n\n"+str(len(faces))+" "+csvList[index][1]+$
         photofile = "cp "+TLfilename+" /home/pi/Pictures/"
         print(filename)
         subprocess.Popen(photofile, shell=True)
@@ -676,6 +680,7 @@ def main():
                 if event.value == 2 and event.code != prev_hold:
                     if event.code == bBtn:
                         camera.annotate_text = None
+                        time.sleep(.5)
                         funnyPic()
                         prev_hold = event.code
                     elif event.code == yBtn:
